@@ -1,0 +1,33 @@
+{
+  "name": "expressjs-indepth",
+  "version": "1.0.0",
+  "description": "exprcessjs-typescript-indepth",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "serve": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/prasanvb/expressjs-indepth.git"
+  },
+  "author": "prasanvb",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prasanvb/expressjs-indepth/issues"
+  },
+  "homepage": "https://github.com/prasanvb/expressjs-indepth#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2",
+    "nodemon": "^3.1.7"
+  },
+  "dependencies": {
+    
+  }
+}
