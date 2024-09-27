@@ -1,2 +1,1 @@
-# expressjs-indepth
-expressjs-typescript-indepth
+# expressjs-typescript-indepth
