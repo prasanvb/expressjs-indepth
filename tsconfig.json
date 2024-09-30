@@ -3,10 +3,11 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "./dist",
     "paths": {
-      "@middlewares/*": ["src/middlewares/*"]
+      "@/*": ["src/*"]
     },
     "skipLibCheck": true,
     "strict": true,
