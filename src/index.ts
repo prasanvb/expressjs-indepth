@@ -1,11 +1,70 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import 'dotenv/config';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware to parse the request body to json
+interface RequestWithMiddleware extends Request {
+  parsedRouteParamId?: number;
+  findUserIndex?: number;
+}
+
+// MIDDLEWARE:
+//    Middleware should be always place before all routes
+//    we can have multiple middle but the order of calling matters
+//    we cannot pass data from one middleware to other middleware but
+//    we can dynamically attach properties to request object
+
+// PAYLOAD:
+// { firstname: 'ganapathy', lastname: 'parameshara' },
+
+// Global middleware to parse the request body to json
 app.use(express.json());
+
+// Custome middleware
+const reqLoggingMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // we do request manipulation and validation using middleware
+  console.log({
+    path: req.path,
+    method: req.method,
+    params: req.params,
+    query: req.query,
+    body: req.body,
+  });
+  next();
+};
+
+const resolveUserIndex = (
+  req: RequestWithMiddleware,
+  res: Response,
+  next: NextFunction,
+) => {
+  const {
+    params: { id },
+  } = req;
+
+  // TODO: parseInt has a issues with route params like 2f, need to use regex
+  const parsedRouteParamId = parseInt(id);
+
+  if (isNaN(parsedRouteParamId)) {
+    res.status(400).json({ message: 'Invalid Id.' });
+    return;
+  }
+
+  const findUserIndex = userList.findIndex(
+    (user) => user.id === parsedRouteParamId,
+  );
+
+  // We can dynamically attach properties to request object
+  req.parsedRouteParamId = parsedRouteParamId;
+  req.findUserIndex = findUserIndex;
+
+  next();
+};
 
 const userList = [
   { id: 1, firstname: 'prasan', lastname: 'bala' },
@@ -23,13 +82,15 @@ app.get('/', (req: Request, res: Response) => {
 // GET: "/api/users?firstname=an"
 app.get('/api/users', (req: Request, res: Response) => {
   if (Object.keys(req.query).length === 0) {
-    res.send(userList);
+    res.status(200).send(userList);
+    // Though res.send() sends the response back to the client, the code execution doesn't stop there.
+    return;
   }
 
   const { firstname } = req.query as { firstname: string };
 
   if (firstname === undefined) {
-    res.status(400).send({ message: 'Invalid query parameter' });
+    res.status(400).json({ message: 'Invalid query parameter' });
     return;
   }
 
@@ -37,7 +98,6 @@ app.get('/api/users', (req: Request, res: Response) => {
 
   if (users.length < 1) {
     res.status(400).json({ message: 'No matching user found' });
-    // Though res.send() sends the response back to the client, the code execution doesn't stop there.
     // If no return statement then throws Error: Cannot set headers after they are sent to the client.
     return;
   }
@@ -48,32 +108,30 @@ app.get('/api/users', (req: Request, res: Response) => {
 // GET: "/api/user/1"
 // API with route paramters
 // NOTE: Route paramters returned by express is always a string
-app.get('/api/user/:id', (req: Request, res: Response) => {
-  // TODO: parseInt has a issues with route params like 2f, need to use regex
-  const parsedRouteParamId = parseInt(req.params.id);
+app.get(
+  '/api/user/:id',
+  reqLoggingMiddleware,
+  resolveUserIndex,
+  (req: RequestWithMiddleware, res: Response) => {
+    const user = userList.find((user) => user.id === req.parsedRouteParamId);
 
-  if (isNaN(parsedRouteParamId)) {
-    res.status(400).send({ message: 'Invalid Id.' });
-  }
+    if (user === undefined) {
+      res.status(400).json({ message: 'User with a given id not found.' });
+      // Though res.send() sends the response back to the client, the code execution doesn't stop there.
+      // If no return statement then throws Error: Cannot set headers after they are sent to the client.
+      return;
+    }
 
-  const user = userList.find((user) => user.id === parsedRouteParamId);
+    res.status(200).send(user);
+  },
+);
 
-  if (user === undefined) {
-    res.status(400).send({ message: 'Id not found.' });
-    // Though res.send() sends the response back to the client, the code execution doesn't stop there.
-    // If no return statement then throws Error: Cannot set headers after they are sent to the client.
-    return;
-  }
-
-  res.status(200).send(user);
-});
-
-// POST: "/api/user"
+// POST: "/api/user" & payload
 app.post('/api/user', (req: Request, res: Response) => {
   const { firstname, lastname } = req.body;
 
   if (firstname === undefined || lastname === undefined) {
-    res.status(400).send({ message: 'Invalid body.' });
+    res.status(400).json({ message: 'Invalid body.' });
     return;
   }
 
@@ -82,39 +140,77 @@ app.post('/api/user', (req: Request, res: Response) => {
   res.status(201).send(userList);
 });
 
-app.put('/api/user/:id', (req: Request, res: Response) => {
-  const {
-    body,
-    params: { id },
-  } = req;
+// PUT: "/api/user/1" & payload
+app.put(
+  '/api/user/:id',
+  reqLoggingMiddleware,
+  resolveUserIndex,
+  (req: RequestWithMiddleware, res: Response) => {
+    const { findUserIndex, parsedRouteParamId, body } = req;
 
-  // TODO: parseInt has a issues with route params like 2f, need to use regex
-  const parsedRouteParamId = parseInt(id);
+    if (findUserIndex === -1 || findUserIndex === undefined) {
+      res.status(400).json({ message: 'Id not found.' });
+      return;
+    }
 
-  if (isNaN(parsedRouteParamId)) {
-    res.status(400).send({ message: 'Invalid Id.' });
-    return;
-  }
+    if (Object.keys(body).length === 0) {
+      res.status(400).json({ message: 'Invalid body.' });
+      return;
+    }
 
-  const findUserIndex = userList.findIndex(
-    (user) => user.id === parsedRouteParamId,
-  );
+    const overWriteUser = { id: parsedRouteParamId, ...body };
+    userList[findUserIndex] = overWriteUser;
 
-  if (findUserIndex === -1) {
-    res.status(400).send({ message: 'Id not found.' });
-    return;
-  }
+    res.status(200).send(userList);
+  },
+);
 
-  if (Object.keys(body).length === 0) {
-    res.status(400).send({ message: 'Invalid body.' });
-    return;
-  }
+// PATCH: "/api/user/1" & payload
+app.patch(
+  '/api/user/:id',
+  reqLoggingMiddleware,
+  resolveUserIndex,
+  (req: RequestWithMiddleware, res: Response) => {
+    const { findUserIndex, body } = req;
 
-  const newUser = { id: parsedRouteParamId, ...body };
-  userList[findUserIndex] = newUser;
+    if (findUserIndex === -1 || findUserIndex === undefined) {
+      res.status(400).json({ message: 'Id not found.' });
+      return;
+    }
 
-  res.status(200).send(userList);
-});
+    if (Object.keys(body).length === 0) {
+      res.status(400).json({ message: 'Invalid body.' });
+      return;
+    }
+
+    const updatedUser = {
+      ...structuredClone(userList[findUserIndex]),
+      ...body,
+    };
+
+    userList[findUserIndex] = updatedUser;
+    res.status(200).send(userList);
+  },
+);
+
+// DELETE: "/api/user/1"
+app.delete(
+  '/api/user/:id',
+  reqLoggingMiddleware,
+  resolveUserIndex,
+  (req: RequestWithMiddleware, res: Response) => {
+    const { findUserIndex } = req;
+
+    if (findUserIndex === -1 || findUserIndex === undefined) {
+      res.status(400).json({ message: 'Id not found.' });
+      return;
+    }
+
+    userList.splice(findUserIndex, 1);
+
+    res.sendStatus(200);
+  },
+);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
