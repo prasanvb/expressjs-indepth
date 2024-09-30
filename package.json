@@ -1,26 +1,10 @@
 {
-  "name": "expressjs-indepth",
-  "version": "1.0.0",
-  "description": "exprcessjs-typescript-indepth",
-  "main": "index.js",
-  "scripts": {
-    "start": "ts-node src/index.ts",
-    "nodemon": "nodemon src/index.ts",
-    "build": "tsc",
-    "serve": "node dist/index.js",
-    "lint": "npx eslint src",
-    "lint:fix": "npm run lint -- --fix"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/prasanvb/expressjs-indepth.git"
-  },
   "author": "prasanvb",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/prasanvb/expressjs-indepth/issues"
   },
-  "homepage": "https://github.com/prasanvb/expressjs-indepth#readme",
+  "dependencies": {},
+  "description": "exprcessjs-typescript-indepth",
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.7.3",
@@ -31,9 +15,27 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "express": "^4.21.0",
+    "express-validator": "^7.2.0",
     "nodemon": "^3.1.7",
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
     "typescript": "^4.9.5"
-  }
+  },
+  "homepage": "https://github.com/prasanvb/expressjs-indepth#readme",
+  "license": "ISC",
+  "main": "index.js",
+  "name": "expressjs-indepth",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/prasanvb/expressjs-indepth.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "npx eslint src",
+    "lint:fix": "npm run lint -- --fix",
+    "nodemon": "nodemon src/index.ts",
+    "serve": "node dist/index.js",
+    "start": "ts-node src/index.ts"
+  },
+  "version": "1.0.0"
 }
