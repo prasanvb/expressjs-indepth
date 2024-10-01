@@ -3,20 +3,23 @@
   "bugs": {
     "url": "https://github.com/prasanvb/expressjs-indepth/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.21.0",
+    "express-validator": "^7.2.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5"
+  },
   "description": "exprcessjs-typescript-indepth",
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.6",
     "@types/express": "^5.0.0",
     "@types/node": "^22.7.3",
     "@typescript-eslint/eslint-plugin": "^8.7.0",
     "@typescript-eslint/parser": "^8.7.0",
-    "dotenv": "^16.4.5",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "express": "^4.21.0",
-    "express-validator": "^7.2.0",
     "nodemon": "^3.1.7",
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
