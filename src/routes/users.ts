@@ -13,7 +13,7 @@ const userRouter = Router();
 userRouter.get(
   '/api/users',
   reqLoggingMiddleware,
-  (req: Request, res: Response) => {
+  (_req: Request, res: Response) => {
     res.status(200).send(userList);
   },
 );

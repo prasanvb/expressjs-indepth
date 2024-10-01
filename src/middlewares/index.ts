@@ -5,7 +5,7 @@ import { RequestWithMiddleware } from '../types/interface';
 // Custome middleware
 export const reqLoggingMiddleware = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   // we do request manipulation and validation using middleware

@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(router);
 
 // root
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.send('Express-TypeScript-Indepth!!');
 });
 
