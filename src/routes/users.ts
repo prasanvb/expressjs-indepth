@@ -13,7 +13,17 @@ const userRouter = Router();
 userRouter.get(
   '/api/users',
   reqLoggingMiddleware,
-  (_req: Request, res: Response) => {
+  (req: Request, res: Response) => {
+    console.log('users-req.sessionStor: ', req.session);
+    console.log('users-req.session.id: ', req.session.id);
+
+    req.sessionStore.get(req.session.id, (err, sessionData) => {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+      console.log({ sessionData });
+    });
     res.status(200).send(userList);
   },
 );

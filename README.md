@@ -21,7 +21,12 @@
   - server setting cookie `res.cookie('token', 'sample123', { maxAge: 1000 * 30, signed: true });`
   - client sending unparsed cookie back `req.headers.cookie`
   - client includes the cookies if it expires or if its manually deleted in client side
-- Cookie Parser
+- Cookie Parser middleware
   - Cookie returned by client in string format, we use middleware to parse it to JSON format
   - Cookie parser attaches parsed cookie to the request directly
   - Also used for signing the cookies with a secret
+
+## SESSION
+
+- express-session
+  - Session data is not saved in the cookie itself, just the session ID. Session data is stored server-side.
