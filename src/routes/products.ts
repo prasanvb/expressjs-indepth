@@ -12,7 +12,7 @@ productsRouter.get(
   (req: Request, res: Response) => {
     console.log('req.headers.cookie: ', req.headers.cookie);
     console.log('req.headers.cookie.length: ', req.headers.cookie?.length);
-    // cookie paser attachs. parsed cookie
+    // cookie paser attachs parsed cookie to the request directly
     console.log('req.cookies: ', req.cookies);
     console.log('req.signedCookies: ', req.signedCookies);
 
