@@ -5,6 +5,7 @@ import { reqLoggingMiddleware, resolveUserIndex } from '../middlewares/index';
 
 import { RequestWithMiddleware } from '../types/interface';
 import { userValidationSchema } from '../utils/userValidationSchema';
+import { fetchActiveSessionLength, fetchSessionData } from '../utils/helpers';
 
 const userRouter = Router();
 
@@ -17,13 +18,12 @@ userRouter.get(
     console.log('users-req.sessionStore: ', req.session);
     console.log('users-req.session.id: ', req.session.id);
 
-    req.sessionStore.get(req.session.id, (err, sessionData) => {
-      if (err) {
-        console.log(err);
-        throw err;
-      }
-      console.log({ sessionData });
-    });
+    // Access session store to find total number of active sessions
+    fetchActiveSessionLength(req);
+
+    // Access session data of a specific session id from the session store
+    fetchSessionData(req);
+
     res.status(200).send(userList);
   },
 );
