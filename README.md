@@ -26,7 +26,10 @@
   - Cookie parser attaches parsed cookie to the request directly
   - Also used for signing the cookies with a secret
 
-## SESSION
+## SESSIONS
 
 - express-session
-  - Session data is not saved in the cookie itself, just the session ID. Session data is stored server-side.
+  - Session data is not saved in the cookie itself, just the session ID. Session data is stored server-side
+  - Session management using express-session
+  - By default session data is stored in memory but it can be stored in persistence database
+  - Persistent session stores can be implemented using redis, dynamoDB, etc.

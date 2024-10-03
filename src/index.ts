@@ -10,8 +10,7 @@ const port = process.env.PORT || 3000;
 // Global middleware to parse the request body to json
 app.use(express.json());
 app.use(cookieParser('secret'));
-// By default session data is stored in memory but it can be stored in persistence database
-// Session Store Implementation using redis, dynamoDB, etc.
+// Session management using express-session
 app.use(
   session({
     secret: 'sessionSecret',
@@ -38,11 +37,23 @@ app.get('/session', (req: Request, res: Response) => {
   // Manipulating session object to simulate authentication
   // @ts-ignore
   req.session.visited = true;
+
   // console.log('req.sessionStore: ', req.sessionStore);
-  console.log('req.sessionStor: ', req.session);
+  // console.log('req.sessionStore: ', req.session);
   console.log('req.session.id: ', req.session.id);
 
-  // Access session data of a specific session id from the session store 
+  // Access session store to find total number of active sessions
+  req.sessionStore.length
+    ? req.sessionStore.length((err, length) => {
+        if (err) {
+          console.log(err);
+          throw err;
+        }
+        console.log({ length });
+      })
+    : undefined;
+
+  // Access session data of a specific session id from the session store
   req.sessionStore.get(req.session.id, (err, sessionData) => {
     if (err) {
       console.log(err);

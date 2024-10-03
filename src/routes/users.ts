@@ -14,7 +14,7 @@ userRouter.get(
   '/api/users',
   reqLoggingMiddleware,
   (req: Request, res: Response) => {
-    console.log('users-req.sessionStor: ', req.session);
+    console.log('users-req.sessionStore: ', req.session);
     console.log('users-req.session.id: ', req.session.id);
 
     req.sessionStore.get(req.session.id, (err, sessionData) => {
