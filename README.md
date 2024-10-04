@@ -36,4 +36,10 @@ NOTE: Client can be different application from same IP, eg, postman, browser, in
   - Session ID in the cookie get stored on the client side, so every time client makes call to server the cookie gets included
   - By default session data is stored in memory but it can be stored in persistence database
   - Persistent session stores can be implemented using redis, dynamoDB, etc.
-  - At given point in time there might be many client sessions and server maps each session to different user
+  - At given point in time there might be many client sessions and server maps each session to differnt user
+
+## PASSPORT
+
+- Passport is authentication middleware that provides various strategies for user authentication
+- Passport local strategy used along with sessions takes care of mapping the authenticated user with the sessions
+- 

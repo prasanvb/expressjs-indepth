@@ -9,8 +9,12 @@ import { fetchSessionData, fetchActiveSessionLength } from './utils/helpers';
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Global middleware to parse the request body to json
+// Global middlewares
 app.use(express.json());
+/*
+  NOTE: secret in cookieParser is directly used for creating signed cookies 
+  this has nothing to do with session secret or session cookies
+*/
 app.use(cookieParser('secret'));
 // Session management using express-session
 app.use(
@@ -25,35 +29,20 @@ app.use(
     },
   }),
 );
+// Authentication using passport
 
 app.use(router);
 
-// root
+// root path
 app.get('/', (_req: Request, res: Response) => {
   // maxAge: 30 sec
   res.cookie('token', 'sample123', { maxAge: 1000 * 30, signed: true });
   res.send('Express-TypeScript-Indepth!!');
 });
 
-app.get('/session', (req: Request, res: Response) => {
-  // Manipulating session object and add property
-  // @ts-ignore
-  req.session.visited = true;
-
-  // console.log('req.sessionStore: ', req.sessionStore);
-  // console.log('req.sessionStore: ', req.session);
-  console.log('req.session.id: ', req.session.id);
-
-  // Access session store to find total number of active sessions
-  fetchActiveSessionLength(req);
-
-  // Access session data of a specific session id from the session store
-  fetchSessionData(req);
-
-  res.status(200).json({ message: 'Session API called successfully' });
-});
-
-app.post('/api/auth', (req: Request, res: Response) => {
+// session examples
+// Manipulating session object and add "user" prop
+app.post('/session/auth', (req: Request, res: Response) => {
   const {
     body: { username, password },
   } = req;
@@ -79,7 +68,7 @@ app.post('/api/auth', (req: Request, res: Response) => {
   res.status(200).json({ message: 'User authenticated successfully' });
 });
 
-app.post('/api/auth/status', (req: Request, res: Response) => {
+app.post('/session/auth/status', (req: Request, res: Response) => {
   // Access session store to find total number of active sessions
   fetchActiveSessionLength(req);
 
