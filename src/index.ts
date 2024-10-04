@@ -5,6 +5,9 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { userList } from './utils/mocks';
 import { fetchSessionData, fetchActiveSessionLength } from './utils/helpers';
+import passport from 'passport';
+// simply loads the whole module
+import './strategies/localStrategy';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,6 +19,8 @@ app.use(express.json());
   this has nothing to do with session secret or session cookies
 */
 app.use(cookieParser('secret'));
+// Logging and Tracing
+// TODO: app.use(logger());
 // Session management using express-session
 app.use(
   session({
@@ -29,7 +34,11 @@ app.use(
     },
   }),
 );
+
 // Authentication using passport
+app.use(passport.initialize());
+// Dynamically manipulates request session object and attaches user prop
+app.use(passport.session());
 
 app.use(router);
 
@@ -40,8 +49,31 @@ app.get('/', (_req: Request, res: Response) => {
   res.send('Express-TypeScript-Indepth!!');
 });
 
+// Authentication using passport
+app.post(
+  '/api/auth',
+  passport.authenticate('local', {}),
+  (req: Request, res: Response) => {
+    // Access session store to find total number of active sessions
+    fetchActiveSessionLength(req);
+
+    // Access session data of a specific session id from the session store
+    fetchSessionData(req);
+
+    res
+      .status(200)
+      .json({ message: 'User authenticated successfully by Passport' });
+  },
+);
+
+app.get('/api/auth/status', (req: Request, res: Response) => {
+  console.log(req.session);
+  // @ts-ignore
+  req.session.passport.user ? res.sendStatus(200) : res.sendStatus(401);
+});
+
 // session examples
-// Manipulating session object and add "user" prop
+// Manipulate session object and add "user" prop
 app.post('/session/auth', (req: Request, res: Response) => {
   const {
     body: { username, password },
@@ -68,7 +100,7 @@ app.post('/session/auth', (req: Request, res: Response) => {
   res.status(200).json({ message: 'User authenticated successfully' });
 });
 
-app.post('/session/auth/status', (req: Request, res: Response) => {
+app.get('/session/auth/status', (req: Request, res: Response) => {
   // Access session store to find total number of active sessions
   fetchActiveSessionLength(req);
 

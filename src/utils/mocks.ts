@@ -1,10 +1,6 @@
-export const userList: {
-  id: number;
-  firstname: string;
-  lastname: string;
-  username?: string;
-  password?: string;
-}[] = [
+import { UserType } from '../types/interface';
+
+export const userList: UserType[] = [
   {
     id: 1,
     firstname: 'prasan',

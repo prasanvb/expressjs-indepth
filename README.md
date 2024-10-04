@@ -41,5 +41,5 @@ NOTE: Client can be different application from same IP, eg, postman, browser, in
 ## PASSPORT
 
 - Passport is authentication middleware that provides various strategies for user authentication
-- Passport local strategy used along with sessions takes care of mapping the authenticated user with the sessions
-- 
+- Passport local strategy used along with sessions takes care of mapping the authenticated user with the sessions (i.e. Dynamically manipulates request session object and attaches "user" property)
+- k
