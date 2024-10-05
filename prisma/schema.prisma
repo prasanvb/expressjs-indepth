@@ -8,11 +8,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// datasource db {
-//   provider = "mongodb"
-//   url      = "mongodb+srv://prasanvb:prasanvb@expressjsindepth.01csq.mongodb.net/user?retryWrites=true&w=majority"
-// }
-
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
@@ -25,5 +20,5 @@ model User {
   password   String
   firstname  String
   lastname   String
-  email      String?
+  email      String?  @unique
 }

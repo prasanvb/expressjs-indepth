@@ -14,6 +14,11 @@
 
 NOTE: Client can be different application from same IP, eg, postman, browser, insomnia
 
+## EXPRESS-VALIDATOR
+
+- Performs schema validation on the input request body and query parameters
+- [schema](src/utils/userValidationSchema.ts)
+
 ## COOKIES
 
 - Cookies are key/value pairs that contains a small piece data
@@ -48,10 +53,11 @@ NOTE: Client can be different application from same IP, eg, postman, browser, in
 
 ## PRISMA
 
-- Install Prisma CLI globally (`npm install -g prisma`) to run commands from you CLI
+- Install Prisma CLI globally (`npm install -g prisma`) to run commands from you CLI or use `npx` to run prisma commands
   - `prisma help`
 - `prisma db push` - push prisma document model into database and run it every time you update the model
 - `prisma generate` - generate prisma client that you can use inside the server routes/API
+- `npx prisma studio` - visual editor for the data in your database
 
 ## EXAMPLES
 

@@ -7,21 +7,21 @@ export const userList: UserType[] = [
     firstname: 'prasan',
     lastname: 'bala',
     username: 'pv',
-    password: 'asd123',
+    password: 'Asd1234',
   },
   {
     id: 2,
     firstname: 'ganesh',
     lastname: 'siva',
     username: 'gs',
-    password: 'asd123',
+    password: 'Asd123',
   },
   {
     id: 3,
     firstname: 'karthikeya',
     lastname: 'siva',
     username: 'ks',
-    password: 'asd123',
+    password: 'Asd123',
   },
 ];
 

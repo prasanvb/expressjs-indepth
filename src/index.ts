@@ -3,12 +3,13 @@ import dotenv from 'dotenv';
 import router from './routes/index';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import { fetchSessionData, fetchActiveSessionLength } from './utils/helpers';
 import passport from 'passport';
 // simply loads the whole module
-import './strategies/localStrategy';
-dotenv.config();
+import './passport/localStrategy';
+// import { fetchSessionData, fetchActiveSessionLength } from './utils/helpers';
 
+// Global declarations
+dotenv.config();
 const app = express();
 const port = process.env.PORT;
 
@@ -51,14 +52,14 @@ app.get('/', (_req: Request, res: Response) => {
 // Authentication using passport
 app.post(
   '/api/auth',
+  // calls the passport/localStrategy.ts
   passport.authenticate('local', {}),
-  (req: Request, res: Response) => {
+  (_req: Request, res: Response) => {
     // Access session store to find total number of active sessions
-    fetchActiveSessionLength(req);
+    // fetchActiveSessionLength(req);
 
     // Access session data of a specific session id from the session store
-    fetchSessionData(req);
-
+    // fetchSessionData(req);
     res
       .status(200)
       .json({ message: 'User authenticated successfully by Passport' });
@@ -66,12 +67,13 @@ app.post(
 );
 
 app.get('/api/auth/status', (req: Request, res: Response) => {
-  console.log(req.session);
+  console.log('auth status req', req.session);
   // @ts-ignore
   req?.session?.passport?.user ? res.sendStatus(200) : res.sendStatus(401);
 });
 
 app.post('/api/auth/logout', (req: Request, res: Response) => {
+  console.log('logout request', req.session);
   // check if user prop still attached to session data
   // @ts-ignore
   if (!req?.session?.passport?.user) {

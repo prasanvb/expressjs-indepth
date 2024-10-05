@@ -1,16 +1,20 @@
 import { Router, Request, Response } from 'express';
-import { query, validationResult, checkSchema, body } from 'express-validator';
+import {
+  query,
+  validationResult,
+  checkSchema,
+  body,
+  matchedData,
+} from 'express-validator';
 import { userList } from '../utils/mocks';
 import { reqLoggingMiddleware, resolveUserIndex } from '../middlewares/index';
 
 import { RequestWithMiddleware } from '../types/interface';
 import { userValidationSchema } from '../utils/userValidationSchema';
 import { fetchActiveSessionLength, fetchSessionData } from '../utils/helpers';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../prisma/index';
 
 const userRouter = Router();
-// use `prisma` in your application to read and write data in your DB
-const prisma = new PrismaClient();
 
 // API without query paramters
 // GET: "/api/users"
@@ -114,15 +118,9 @@ userRouter.post(
       return;
     }
 
-    const { firstname, lastname, username, password } = req.body;
-    const newUser = {
-      id: userList.length + 1,
-      firstname,
-      lastname,
-      username,
-      password,
-    };
-    userList.push(newUser);
+    // After validation, extracts request body and builds an object with them.
+    const data = matchedData(req);
+    const { firstname, lastname, username, password } = data;
 
     try {
       const newUser = await prisma.user.create({
@@ -138,7 +136,7 @@ userRouter.post(
     } catch (error) {
       console.error({ error });
       res.status(400).json({
-        message: 'Unable to fulfill create user',
+        message: 'Unable to fulfill create user request',
         error,
       });
     }

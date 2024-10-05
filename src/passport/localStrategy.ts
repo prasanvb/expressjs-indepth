@@ -1,42 +1,32 @@
 import { error } from 'console';
-import { userList } from '../utils/mocks';
 import { UserType } from '../types/interface';
 import passport from 'passport';
-import { IVerifyOptions, Strategy as LocalStrategy } from 'passport-local';
-
-export interface PassportLocalStrategyType {
-  username: string;
-  password: string;
-  done: (
-    error: any | false,
-    user?: Express.User | false,
-    options?: IVerifyOptions,
-  ) => void;
-}
+import { Strategy as LocalStrategy } from 'passport-local';
+import prisma from '../prisma/index';
 
 // NOTE: Input authentication values are different then StrategyOptions should be updated
 // example: { usernameField: 'email', passwordField: 'passcode' },
 export default passport.use(
   new LocalStrategy(
     { usernameField: 'username', passwordField: 'password' },
-    function (
-      username: string,
-      password: string,
-      done: (
-        error: any | false,
-        user?: Express.User | false,
-        options?: IVerifyOptions,
-      ) => void,
-    ) {
+    async (username, password, done) => {
       console.log('Inside LocalStrategy', { username, password });
       try {
-        const getUser = userList.find((user) => user.username === username);
-        if (!getUser) throw error('User with a matching username not found');
-        if (getUser.password !== password)
+        const user = await prisma.user.findUnique({
+          where: {
+            username,
+          },
+        });
+
+        if (!user) throw error('User not found');
+        if (user.password !== password)
           throw error('Invalid passpword credentials');
-        done(false, getUser, { message: 'invalid credentials' });
+
+        done(null, user);
       } catch (error) {
-        done(error, false, { message: 'valid credentials' });
+        console.error({ error });
+
+        done(error, false);
       }
     },
   ),
@@ -55,17 +45,19 @@ passport.serializeUser(function (user, done) {
 // After initial authentication and Serialization, for subsequent calls from the same client
 // only deserialization function will be called to verify if the session is still valid
 // once session expires "passport: { user: 1 }" prop is removed from the session object
-passport.deserializeUser(function (id: number, done) {
+passport.deserializeUser(async function (id: number, done) {
   console.log('Inside deserializeUser');
-
+  const stringId = id.toString();
   try {
-    const getUser = userList.find((user) => user.id === id);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: stringId,
+      },
+    });
 
-    if (!getUser) {
-      throw error('User with a matching id not found');
-    }
+    if (!user) throw error('User with a matching id not found');
 
-    done(false, 'getUser');
+    done(false, user);
   } catch (error) {
     done(error, false);
   }
