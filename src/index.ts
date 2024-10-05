@@ -67,7 +67,24 @@ app.post(
 app.get('/api/auth/status', (req: Request, res: Response) => {
   console.log(req.session);
   // @ts-ignore
-  req.session.passport.user ? res.sendStatus(200) : res.sendStatus(401);
+  req?.session?.passport?.user ? res.sendStatus(200) : res.sendStatus(401);
+});
+
+app.post('/api/auth/logout', (req: Request, res: Response) => {
+  // check if user prop still attached to session data
+  // @ts-ignore
+  if (!req?.session?.passport?.user) {
+    res.status(401).json({ message: 'User session not active any more' });
+  }
+
+  // logout method is attached to req by passport
+  req.logOut({}, (error) => {
+    if (error) {
+      res.status(401).json({ message: 'Error trying to logout user', error });
+    }
+
+    res.status(200).json({ message: 'User logout successful' });
+  });
 });
 
 app.listen(port, () => {
