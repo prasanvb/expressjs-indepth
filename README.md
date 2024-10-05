@@ -3,7 +3,7 @@
 ## Environment variables
 
 - `PORT=3000`
-- `DB_URI="mongodb+srv://<db_username>:<db_password>@express-indepth.01csq.mongodb.net/?retryWrites=true&w=majority&appName=express-indepth"`
+- `DATABASE_URL="mongodb+srv://<username>:<password>@<cluster_name>/<colection_name>?retryWrites=true&w=majority"`
 
 ## MIDDLEWARE
 
@@ -45,6 +45,13 @@ NOTE: Client can be different application from same IP, eg, postman, browser, in
 - Passport local strategy used along with sessions takes care of mapping the authenticated user with the sessions
 - We provide functions to Passport that performs the necessary authentication, serialization and deserialization logic
 - In order for persistent sessions to work, the after successful authentication user must be serialized to the session (i.e. Dynamically manipulates request session object and attaches "user" property), and deserialized when subsequent requests are made (i.e. Verify if the authentication is still valid by checking session object).
+
+## PRISMA
+
+- Install Prisma CLI globally (`npm install -g prisma`) to run commands from you CLI
+  - `prisma help`
+- `prisma db push` - push prisma document model into database and run it every time you update the model
+- `prisma generate` - generate prisma client that you can use inside the server routes/API
 
 ## EXAMPLES
 

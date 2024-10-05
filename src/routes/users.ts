@@ -6,8 +6,11 @@ import { reqLoggingMiddleware, resolveUserIndex } from '../middlewares/index';
 import { RequestWithMiddleware } from '../types/interface';
 import { userValidationSchema } from '../utils/userValidationSchema';
 import { fetchActiveSessionLength, fetchSessionData } from '../utils/helpers';
+import { PrismaClient } from '@prisma/client';
 
 const userRouter = Router();
+// use `prisma` in your application to read and write data in your DB
+const prisma = new PrismaClient();
 
 // API without query paramters
 // GET: "/api/users"
@@ -100,25 +103,45 @@ userRouter.get(
 userRouter.post(
   '/api/user',
   checkSchema(userValidationSchema),
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     const queryValidationResult = validationResult(req);
 
     if (!queryValidationResult.isEmpty()) {
       res.status(400).json({
-        message: 'Invalid body.',
+        message: 'Invalid body',
         queryValidationResult,
       });
       return;
     }
 
-    const { firstname, lastname } = req.body;
+    const { firstname, lastname, username, password } = req.body;
     const newUser = {
       id: userList.length + 1,
       firstname,
       lastname,
+      username,
+      password,
     };
     userList.push(newUser);
-    res.status(201).send(userList);
+
+    try {
+      const newUser = await prisma.user.create({
+        data: {
+          firstname,
+          lastname,
+          username,
+          password,
+        },
+      });
+
+      res.status(201).send(newUser);
+    } catch (error) {
+      console.error({ error });
+      res.status(400).json({
+        message: 'Unable to fulfill create user',
+        error,
+      });
+    }
   },
 );
 

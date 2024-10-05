@@ -19,8 +19,8 @@ app.use(express.json());
   this has nothing to do with session secret or session cookies
 */
 app.use(cookieParser('secret'));
-// Logging and Tracing
-// TODO: app.use(logger());
+// TODO: Logging and Tracing
+// TODO: Cors
 // Session management using express-session
 app.use(
   session({
