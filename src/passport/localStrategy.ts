@@ -39,15 +39,18 @@ passport.serializeUser(function (user, done) {
 
   // Manipulates session object and add "passport: { user: 1 }" prop
   // you can attach any prop to the session data
-  done(null, (user as UserType).id);
+  done(null, {
+    id: (user as UserType).id,
+    username: (user as UserType).username,
+  });
 });
 
 // After initial authentication and Serialization, for subsequent calls from the same client
 // only deserialization function will be called to verify if the session is still valid
 // once session expires "passport: { user: 1 }" prop is removed from the session object
-passport.deserializeUser(async function (id: number, done) {
-  console.log('Inside deserializeUser');
-  const stringId = id.toString();
+passport.deserializeUser(async function (user, done) {
+  const stringId = (user as UserType).id.toString();
+
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -55,7 +58,9 @@ passport.deserializeUser(async function (id: number, done) {
       },
     });
 
-    if (!user) throw error('User with a matching id not found');
+    console.log('Inside deserializeUser', { user });
+
+    if (!user) throw error('User not found');
 
     done(false, user);
   } catch (error) {

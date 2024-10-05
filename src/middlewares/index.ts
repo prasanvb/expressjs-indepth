@@ -19,6 +19,22 @@ export const reqLoggingMiddleware = (
   next();
 };
 
+export const checkIfAlreadyLoggedIn = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // @ts-ignore
+  if (req?.session?.passport?.user) {
+    res.status(400).json({
+      message: 'User already authenticated. Logout to login as different user',
+    });
+    return;
+  }
+
+  next();
+};
+
 export const resolveUserIndex = (
   req: RequestWithMiddleware,
   res: Response,
@@ -32,7 +48,7 @@ export const resolveUserIndex = (
   const parsedRouteParamId = parseInt(id);
 
   if (isNaN(parsedRouteParamId)) {
-    res.status(400).json({ message: 'Invalid Id.' });
+    res.status(400).json({ message: 'Invalid data type' });
     return;
   }
 

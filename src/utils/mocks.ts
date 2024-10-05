@@ -7,7 +7,7 @@ export const userList: UserType[] = [
     firstname: 'prasan',
     lastname: 'bala',
     username: 'pv',
-    password: 'Asd1234',
+    password: 'Asd123',
   },
   {
     id: 2,

@@ -11,20 +11,15 @@ interface RequestWithMiddleware extends Request {
   findUserIndex?: number;
 }
 
-// MIDDLEWARE:
-//    Middleware should be always place before all routes
-//    we can have multiple middle but the order of calling matters
-//    we cannot pass data from one middleware to other middleware but
-//    we can dynamically attach properties to request object
-
-// PAYLOAD:
-// { firstname: 'ganapathy', lastname: 'parameshara' },
-
 // Global middleware to parse the request body to json
 app.use(express.json());
 
 // Custome middleware
-const reqLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
+const reqLoggingMiddleware = (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
   // we do request manipulation and validation using middleware
   console.log({
     path: req.path,
@@ -53,7 +48,9 @@ const resolveUserIndex = (
     return;
   }
 
-  const findUserIndex = userList.findIndex((user) => user.id === parsedRouteParamId);
+  const findUserIndex = userList.findIndex(
+    (user) => user.id === parsedRouteParamId,
+  );
 
   // We can dynamically attach properties to request object
   req.parsedRouteParamId = parsedRouteParamId;

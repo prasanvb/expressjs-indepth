@@ -8,10 +8,9 @@ import {
 } from 'express-validator';
 import { userList } from '../utils/mocks';
 import { reqLoggingMiddleware, resolveUserIndex } from '../middlewares/index';
-
 import { RequestWithMiddleware } from '../types/interface';
 import { userValidationSchema } from '../utils/userValidationSchema';
-import { fetchActiveSessionLength, fetchSessionData } from '../utils/helpers';
+import { checkIfSessionIsActive } from '../utils/helpers';
 import prisma from '../prisma/index';
 
 const userRouter = Router();
@@ -21,17 +20,60 @@ const userRouter = Router();
 userRouter.get(
   '/api/users',
   reqLoggingMiddleware,
-  (req: Request, res: Response) => {
-    console.log('users-req.sessionStore: ', req.session);
-    console.log('users-req.session.id: ', req.session.id);
+  async (req: Request, res: Response) => {
+    console.log('/api/users', req.session);
 
-    // Access session store to find total number of active sessions
-    fetchActiveSessionLength(req);
+    if (checkIfSessionIsActive(req, res)) {
+      try {
+        const allUsers = await prisma.user.findMany();
 
-    // Access session data of a specific session id from the session store
-    fetchSessionData(req);
+        res.status(201).send(allUsers);
+      } catch (error) {
+        console.error({ error });
+        res.status(400).json({
+          message: 'Unable to fetch all users',
+          error,
+        });
+      }
+    }
+  },
+);
 
-    res.status(200).send(userList);
+// GET: "/api/user/1"
+// API with route paramters
+// NOTE: Route paramters returned by express is always a string
+userRouter.get(
+  '/api/user/:username',
+  reqLoggingMiddleware,
+  async (req: RequestWithMiddleware, res: Response) => {
+    const {
+      params: { username },
+    } = req;
+
+    if (checkIfSessionIsActive(req, res)) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: {
+            username,
+          },
+          select: {
+            firstname: true,
+            lastname: true,
+          },
+        });
+
+        if (user) {
+          res.status(200).send(user);
+        } else {
+          res.status(400).json({ message: 'No matching username found' });
+          return;
+        }
+      } catch (error) {
+        res
+          .status(400)
+          .json({ message: 'Error, unable to query user collection', error });
+      }
+    }
   },
 );
 
@@ -46,15 +88,12 @@ userRouter.get(
     .withMessage('Name must not be empty')
     .isLength({ min: 1, max: 10 })
     .withMessage('Name length requirements not met'),
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     const queryValidationResult = validationResult(req);
-    console.log(queryValidationResult);
 
     // "/api/users/filter" no qurey param
     if (Object.keys(req.query).length === 0) {
-      // Response includes only default http status message
-      res.sendStatus(404);
-      // Though res.send() sends the response back to the client, the code execution doesn't stop there.
+      res.status(404).json({ message: 'Empty query parameter' });
       return;
     }
 
@@ -64,42 +103,42 @@ userRouter.get(
       return;
     }
 
-    const { name } = req.query as { name: string };
+    const data = matchedData(req);
+    const { name } = data;
 
-    const users = userList.filter(
-      (user) => user.firstname.includes(name) || user.lastname.includes(name),
-    );
+    if (checkIfSessionIsActive(req, res)) {
+      try {
+        const matchingUsers = await prisma.user.findMany({
+          where: {
+            OR: [
+              {
+                firstname: {
+                  contains: name,
+                },
+              },
+              {
+                lastname: {
+                  contains: name,
+                },
+              },
+            ],
+          },
+        });
 
-    if (users.length < 1) {
-      res.status(400).json({ message: 'No matching user found' });
-      // If no return statement then throws Error: Cannot set headers after they are sent to the client.
-      return;
+        if (matchingUsers.length > 0) {
+          res.status(200).send(matchingUsers);
+        } else {
+          res
+            .status(400)
+            .json({ message: 'No matching user with given name found' });
+          return;
+        }
+      } catch (error) {
+        res
+          .status(400)
+          .json({ message: 'Error, unable to query user collection', error });
+      }
     }
-
-    res.status(200).send(users);
-  },
-);
-
-// GET: "/api/user/1"
-// API with route paramters
-// NOTE: Route paramters returned by express is always a string
-userRouter.get(
-  '/api/user/:id',
-  reqLoggingMiddleware,
-  resolveUserIndex,
-  (req: RequestWithMiddleware, res: Response) => {
-    const user = userList.find((user) => user.id === req.parsedRouteParamId);
-
-    if (user === undefined) {
-      res.status(400).json({
-        message: 'User with a given id not found.',
-      });
-      // Though res.send() sends the response back to the client, the code execution doesn't stop there.
-      // If no return statement then throws Error: Cannot set headers after they are sent to the client.
-      return;
-    }
-
-    res.status(200).send(user);
   },
 );
 

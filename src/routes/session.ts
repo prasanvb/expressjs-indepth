@@ -43,4 +43,18 @@ sessionRouter.get('/session/auth/status', (req: Request, res: Response) => {
   req.session.user ? res.sendStatus(200) : res.sendStatus(401);
 });
 
+// NOTE: trying calling this route before '/session/auth'
+sessionRouter.get('/session/users', (req: Request, res: Response) => {
+  console.log('users-req.sessionStore: ', req.session);
+  console.log('users-req.session.id: ', req.session.id);
+
+  // Access session store to find total number of active sessions
+  fetchActiveSessionLength(req);
+
+  // Access session data of a specific session id from the session store
+  fetchSessionData(req);
+
+  res.status(200).send(userList);
+});
+
 export default sessionRouter;

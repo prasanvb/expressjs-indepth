@@ -11,8 +11,7 @@
 - We can have multiple middle but the order of calling matters
 - We cannot pass data from one middleware to other middleware
 - We can dynamically attach properties to request object
-
-NOTE: Client can be different application from same IP, eg, postman, browser, insomnia
+- `next()` called inside to move from middleware to the next
 
 ## EXPRESS-VALIDATOR
 
@@ -64,3 +63,8 @@ NOTE: Client can be different application from same IP, eg, postman, browser, in
 - [REST API - HTTP methods](src/routes/users.ts)
 - [Cookies and Cookie Parser](src/routes/products.ts)
 - [Express Session](src/routes/session.ts)
+
+NOTE:
+
+- Client can be different application from same IP, eg, postman, browser, insomnia
+- Add `return` statement after error responses, to stop code execution beyond that. If not server throws `Error: Cannot set headers after they are sent to the client`.
