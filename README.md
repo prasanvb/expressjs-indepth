@@ -1,8 +1,9 @@
 # EXPRESS-TYPESCRIPT-INDEPTH
 
-## SAMPLE PAYLOAD
+## Environment variables
 
-- `{ firstname: 'ganapathy', lastname: 'parameshara' }`
+- `PORT=3000`
+- `DB_URI="mongodb+srv://<db_username>:<db_password>@express-indepth.01csq.mongodb.net/?retryWrites=true&w=majority&appName=express-indepth"`
 
 ## MIDDLEWARE
 
