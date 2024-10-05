@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import router from './routes/index';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -7,9 +7,10 @@ import { fetchSessionData, fetchActiveSessionLength } from './utils/helpers';
 import passport from 'passport';
 // simply loads the whole module
 import './strategies/localStrategy';
+dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 // Global middlewares
 app.use(express.json());
