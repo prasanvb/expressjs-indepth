@@ -43,15 +43,17 @@ export default passport.use(
 );
 
 // During '/api/auth' call if passport.authenticate is success then
-// Manipulates session object and add "passport: { user: 1 }" prop
-// this is one time process
+// Serialization happens only after authentication process
 passport.serializeUser(function (user, done) {
   console.log('Inside serializeUser', user);
+
+  // Manipulates session object and add "passport: { user: 1 }" prop
+  // you can attach any prop to the session data
   done(null, (user as UserType).id);
 });
 
-// After initial authentication for subsequent calls from the same client
-// only deserializeUser will be called to verify if the session is still valid
+// After initial authentication and Serialization, for subsequent calls from the same client
+// only deserialization function will be called to verify if the session is still valid
 // once session expires "passport: { user: 1 }" prop is removed from the session object
 passport.deserializeUser(function (id: number, done) {
   console.log('Inside deserializeUser');

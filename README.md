@@ -38,8 +38,15 @@ NOTE: Client can be different application from same IP, eg, postman, browser, in
   - Persistent session stores can be implemented using redis, dynamoDB, etc.
   - At given point in time there might be many client sessions and server maps each session to differnt user
 
-## PASSPORT
+## [PASSPORT](https://github.com/jaredhanson/passport)
 
 - Passport is authentication middleware that provides various strategies for user authentication
-- Passport local strategy used along with sessions takes care of mapping the authenticated user with the sessions (i.e. Dynamically manipulates request session object and attaches "user" property)
-- k
+- Passport local strategy used along with sessions takes care of mapping the authenticated user with the sessions
+- We provide functions to Passport that performs the necessary authentication, serialization and deserialization logic
+- In order for persistent sessions to work, the after successful authentication user must be serialized to the session (i.e. Dynamically manipulates request session object and attaches "user" property), and deserialized when subsequent requests are made (i.e. Verify if the authentication is still valid by checking session object).
+
+## EXAMPLES
+
+- [REST API - HTTP methods](src/routes/users.ts)
+- [Cookies and Cookie Parser](src/routes/products.ts)
+- [Express Session](src/routes/session.ts)

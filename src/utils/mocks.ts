@@ -1,5 +1,6 @@
 import { UserType } from '../types/interface';
 
+// mainly used for session example
 export const userList: UserType[] = [
   {
     id: 1,

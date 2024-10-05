@@ -10,9 +10,10 @@ productsRouter.get(
   '/api/products',
   reqLoggingMiddleware,
   (req: Request, res: Response) => {
+    // Cookie and cookie parser example - "/" and "/api/products"
     console.log('req.headers.cookie: ', req.headers.cookie);
     console.log('req.headers.cookie.length: ', req.headers.cookie?.length);
-    // cookie paser attachs parsed cookie to the request directly
+    // cookie parser attaches parsed cookie to the request directly
     console.log('req.cookies: ', req.cookies);
     console.log('req.signedCookies: ', req.signedCookies);
 
@@ -21,7 +22,7 @@ productsRouter.get(
       return;
     }
 
-    res.status(400).send({ message: 'invalid cookie' });
+    res.status(400).send({ message: 'Invalid cookie' });
   },
 );
 
