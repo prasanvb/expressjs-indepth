@@ -11,7 +11,10 @@ import {
   reqLoggingMiddleware,
   checkIfSessionValid,
 } from '../middlewares/index';
-import { RequestWithMiddleware } from '../types/interface';
+import {
+  RequestWithMiddleware,
+  SessionWithPassportType,
+} from '../types/interface';
 import { checkIfSessionIsActive } from '../utils/helpers';
 import prisma from '../prisma/index';
 
@@ -46,13 +49,12 @@ userRouter.get(
 // API with route paramters
 // NOTE: Route paramters returned by express is always a string
 userRouter.get(
-  '/api/user/:username',
+  '/api/user/current',
   reqLoggingMiddleware,
   checkIfSessionValid,
   async (req: RequestWithMiddleware, res: Response) => {
-    const {
-      params: { username },
-    } = req;
+    const username = (req.session as SessionWithPassportType)?.passport?.user
+      ?.username;
 
     try {
       const user = await prisma.user.findUnique({

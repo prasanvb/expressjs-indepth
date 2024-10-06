@@ -1,8 +1,8 @@
+import { Session } from 'express-session';
 import { Request } from 'express';
 
 export interface RequestWithMiddleware extends Request {
-  parsedRouteParamId?: number;
-  findUserIndex?: number;
+  session: SessionWithPassportType;
 }
 
 export interface UserType {
@@ -11,4 +11,13 @@ export interface UserType {
   lastname: string;
   username?: string;
   password?: string;
+}
+
+export interface SessionWithPassportType extends Session {
+  passport?: {
+    user?: {
+      id: string;
+      username: string;
+    };
+  };
 }

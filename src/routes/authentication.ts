@@ -3,6 +3,7 @@ import { checkIfAlreadyLoggedIn } from '../middlewares/index';
 import passport from 'passport';
 // simply loads the whole module
 import '../passport/localStrategy';
+import { SessionWithPassportType } from '../types/interface';
 
 const authenticationRouter = Router();
 
@@ -26,15 +27,15 @@ authenticationRouter.post(
 
 authenticationRouter.get('/api/auth/status', (req: Request, res: Response) => {
   console.log('auth status req', req.session);
-  // @ts-ignore
-  req?.session?.passport?.user ? res.sendStatus(200) : res.sendStatus(401);
+  (req.session as SessionWithPassportType)?.passport?.user
+    ? res.sendStatus(200)
+    : res.sendStatus(401);
 });
 
 authenticationRouter.post('/api/auth/logout', (req: Request, res: Response) => {
   console.log('logout request', req.session);
   // check if user prop still attached to session data
-  // @ts-ignore
-  if (!req?.session?.passport?.user) {
+  if (!(req.session as SessionWithPassportType)?.passport?.user) {
     res.status(401).send({ message: 'User session not active any more' });
     return;
   }
