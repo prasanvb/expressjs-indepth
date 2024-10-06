@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import 'dotenv/config';
 import { query, validationResult, body, checkSchema } from 'express-validator';
-import { userValidationSchema } from './utils/userValidationSchema';
 
 const app = express();
 const port = process.env.PORT || 3000;

@@ -35,6 +35,19 @@ export const checkIfAlreadyLoggedIn = (
   next();
 };
 
+export const checkIfSessionValid = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // @ts-ignore
+  if (!req?.session?.passport?.user) {
+    res.status(400).json({ message: 'User not authenticated' });
+    return;
+  }
+  next();
+};
+
 export const resolveUserIndex = (
   req: RequestWithMiddleware,
   res: Response,

@@ -2,14 +2,16 @@ import { Router, Request, Response } from 'express';
 import {
   query,
   validationResult,
-  checkSchema,
   body,
   matchedData,
+  checkSchema,
 } from 'express-validator';
-import { userList } from '../utils/mocks';
-import { reqLoggingMiddleware, resolveUserIndex } from '../middlewares/index';
+import { patchValidationSchema } from '../utils/validationSchema';
+import {
+  reqLoggingMiddleware,
+  checkIfSessionValid,
+} from '../middlewares/index';
 import { RequestWithMiddleware } from '../types/interface';
-import { userValidationSchema } from '../utils/userValidationSchema';
 import { checkIfSessionIsActive } from '../utils/helpers';
 import prisma from '../prisma/index';
 
@@ -20,6 +22,7 @@ const userRouter = Router();
 userRouter.get(
   '/api/users',
   reqLoggingMiddleware,
+  checkIfSessionValid,
   async (req: Request, res: Response) => {
     console.log('/api/users', req.session);
 
@@ -39,40 +42,39 @@ userRouter.get(
   },
 );
 
-// GET: "/api/user/1"
+// GET: "/api/user/pv"
 // API with route paramters
 // NOTE: Route paramters returned by express is always a string
 userRouter.get(
   '/api/user/:username',
   reqLoggingMiddleware,
+  checkIfSessionValid,
   async (req: RequestWithMiddleware, res: Response) => {
     const {
       params: { username },
     } = req;
 
-    if (checkIfSessionIsActive(req, res)) {
-      try {
-        const user = await prisma.user.findUnique({
-          where: {
-            username,
-          },
-          select: {
-            firstname: true,
-            lastname: true,
-          },
-        });
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          username,
+        },
+        select: {
+          firstname: true,
+          lastname: true,
+        },
+      });
 
-        if (user) {
-          res.status(200).send(user);
-        } else {
-          res.status(400).json({ message: 'No matching username found' });
-          return;
-        }
-      } catch (error) {
-        res
-          .status(400)
-          .json({ message: 'Error, unable to query user collection', error });
+      if (user) {
+        res.status(200).send(user);
+      } else {
+        res.status(400).json({ message: 'No matching username found' });
+        return;
       }
+    } catch (error) {
+      res
+        .status(400)
+        .json({ message: 'Error, unable to query user collection', error });
     }
   },
 );
@@ -82,6 +84,7 @@ userRouter.get(
 userRouter.get(
   '/api/users/filter',
   reqLoggingMiddleware,
+  checkIfSessionValid,
   query('name')
     .isString()
     .notEmpty()
@@ -142,56 +145,16 @@ userRouter.get(
   },
 );
 
-// POST: "/api/user" & payload
-userRouter.post(
-  '/api/user',
-  checkSchema(userValidationSchema),
-  async (req: Request, res: Response) => {
-    const queryValidationResult = validationResult(req);
-
-    if (!queryValidationResult.isEmpty()) {
-      res.status(400).json({
-        message: 'Invalid body',
-        queryValidationResult,
-      });
-      return;
-    }
-
-    // After validation, extracts request body and builds an object with them.
-    const data = matchedData(req);
-    const { firstname, lastname, username, password } = data;
-
-    try {
-      const newUser = await prisma.user.create({
-        data: {
-          firstname,
-          lastname,
-          username,
-          password,
-        },
-      });
-
-      res.status(201).send(newUser);
-    } catch (error) {
-      console.error({ error });
-      res.status(400).json({
-        message: 'Unable to fulfill create user request',
-        error,
-      });
-    }
-  },
-);
-
-// PUT: "/api/user/1" & payload
+// PUT: "/api/user/pv" & payload
 userRouter.put(
-  '/api/user/:id',
+  '/api/user/:username',
   reqLoggingMiddleware,
-  resolveUserIndex,
+  checkIfSessionValid,
   [
     body('firstname').isString().withMessage('firstname must be a string'),
     body('lastname').isString().withMessage('lastname must be a string'),
   ],
-  (req: RequestWithMiddleware, res: Response) => {
+  async (req: RequestWithMiddleware, res: Response) => {
     const queryValidationResult = validationResult(req);
 
     if (!queryValidationResult.isEmpty()) {
@@ -203,77 +166,126 @@ userRouter.put(
     }
 
     const {
-      findUserIndex,
-      parsedRouteParamId,
+      params: { username },
       body: { firstname, lastname },
     } = req;
 
-    if (findUserIndex === undefined || parsedRouteParamId === undefined) {
-      res.status(400).json({ message: 'Id not found.' });
-      return;
+    try {
+      const updatedUser = await prisma.user.update({
+        where: {
+          username,
+        },
+        data: {
+          firstname,
+          lastname,
+        },
+        select: {
+          username: true,
+          firstname: true,
+          lastname: true,
+        },
+      });
+
+      if (updatedUser) {
+        res.status(200).send(updatedUser);
+      } else {
+        res.status(400).json({ message: 'No matching username found' });
+        return;
+      }
+    } catch (error) {
+      res
+        .status(400)
+        .json({ message: 'Error, unable to overwrite user collection', error });
     }
-
-    const overWriteUser = {
-      id: parsedRouteParamId,
-      firstname,
-      lastname,
-    };
-
-    if (findUserIndex < 0) {
-      userList.push(overWriteUser);
-    } else {
-      userList[findUserIndex] = overWriteUser;
-    }
-
-    res.status(200).send(userList);
   },
 );
 
-// PATCH: "/api/user/1" & payload
+// PATCH: "/api/user/pv" & payload
 userRouter.patch(
-  '/api/user/:id',
+  '/api/user/:username',
   reqLoggingMiddleware,
-  resolveUserIndex,
-  (req: RequestWithMiddleware, res: Response) => {
-    const { findUserIndex, body } = req;
+  checkIfSessionValid,
+  checkSchema(patchValidationSchema),
+  async (req: RequestWithMiddleware, res: Response) => {
+    const queryValidationResult = validationResult(req);
 
-    if (findUserIndex === -1 || findUserIndex === undefined) {
-      res.status(400).json({ message: 'Id not found.' });
+    if (!queryValidationResult.isEmpty()) {
+      res.status(400).json({
+        message: 'Invalid body.',
+        queryValidationResult,
+      });
       return;
     }
 
-    if (Object.keys(body).length === 0) {
-      res.status(400).json({ message: 'Invalid body.' });
-      return;
+    const {
+      params: { username },
+      body,
+    } = req;
+
+    try {
+      const updatedUser = await prisma.user.update({
+        where: {
+          username,
+        },
+        data: {
+          ...body,
+        },
+        select: {
+          username: true,
+          firstname: true,
+          lastname: true,
+        },
+      });
+
+      if (updatedUser) {
+        res.status(200).send(updatedUser);
+      } else {
+        res.status(400).json({ message: 'No matching username found' });
+        return;
+      }
+    } catch (error) {
+      res
+        .status(400)
+        .json({ message: 'Error, unable to overwrite user collection', error });
     }
-
-    const updatedUser = {
-      ...structuredClone(userList[findUserIndex]),
-      ...body,
-    };
-
-    userList[findUserIndex] = updatedUser;
-    res.status(200).send(userList);
   },
 );
 
-// DELETE: "/api/user/1"
+// DELETE: "/api/user/pv"
 userRouter.delete(
-  '/api/user/:id',
+  '/api/user/:username',
   reqLoggingMiddleware,
-  resolveUserIndex,
-  (req: RequestWithMiddleware, res: Response) => {
-    const { findUserIndex } = req;
+  checkIfSessionValid,
+  async (req: RequestWithMiddleware, res: Response) => {
+    const {
+      params: { username },
+    } = req;
 
-    if (findUserIndex === -1 || findUserIndex === undefined) {
-      res.status(400).json({ message: 'Id not found.' });
-      return;
+    try {
+      const deleteUser = await prisma.user.delete({
+        where: {
+          username,
+        },
+        select: {
+          username: true,
+        },
+      });
+
+      if (deleteUser) {
+        res
+          .status(200)
+          .send({ message: 'User deleted successfully', deleteUser });
+      } else {
+        res.status(400).json({
+          message: 'User not found',
+        });
+      }
+    } catch (error) {
+      res.status(400).json({
+        message: 'Error, unable to delete user from collection',
+        error,
+      });
     }
-
-    userList.splice(findUserIndex, 1);
-
-    // Response includes only default http status message
-    res.sendStatus(200);
   },
 );
 

@@ -1,13 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { validationResult, checkSchema, matchedData } from 'express-validator';
-import { userValidationSchema } from '../utils/userValidationSchema';
+import { onboadringValidationSchema } from '../utils/validationSchema';
 import prisma from '../prisma/index';
 
 const onboardingRouter = Router();
 
 onboardingRouter.post(
   '/api/onboard',
-  checkSchema(userValidationSchema),
+  checkSchema(onboadringValidationSchema),
   async (req: Request, res: Response) => {
     const queryValidationResult = validationResult(req);
 

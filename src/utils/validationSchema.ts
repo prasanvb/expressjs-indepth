@@ -1,4 +1,4 @@
-export const userValidationSchema = {
+export const onboadringValidationSchema = {
   firstname: {
     isLength: {
       options: {
@@ -30,15 +30,13 @@ export const userValidationSchema = {
     },
   },
   username: {
+    optional: true,
     isLength: {
       options: {
         min: 2,
         max: 12,
       },
       errorMessage: 'username must be min 2 chars and max 10 chars in length',
-    },
-    notEmpty: {
-      errorMessage: 'username cannot be empty',
     },
     isString: {
       errorMessage: 'username must be string',
@@ -57,6 +55,35 @@ export const userValidationSchema = {
     },
     isString: {
       errorMessage: 'password must be string',
+    },
+  },
+};
+
+export const patchValidationSchema = {
+  firstname: {
+    optional: true,
+    isLength: {
+      options: {
+        min: 3,
+        max: 30,
+      },
+      errorMessage: 'firstname must be min 3 chars and max 10 chars in length',
+    },
+    isString: {
+      errorMessage: 'firstname must be string',
+    },
+  },
+  lastname: {
+    optional: true,
+    isLength: {
+      options: {
+        min: 3,
+        max: 30,
+      },
+      errorMessage: 'lastname must be min 3 chars and max 10 chars in length',
+    },
+    isString: {
+      errorMessage: 'lastname must be string',
     },
   },
 };
