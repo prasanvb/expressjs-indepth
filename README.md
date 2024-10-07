@@ -1,9 +1,10 @@
 # EXPRESS-TYPESCRIPT-INDEPTH
 
-## Environment variables
+## ENV
 
 - `PORT=3000`
 - `DATABASE_URL="mongodb+srv://<username>:<password>@<cluster_name>/<colection_name>?retryWrites=true&w=majority"`
+- `SESSION_SECRET="secret"`
 
 ## MIDDLEWARE
 
@@ -36,12 +37,18 @@
 
 ## SESSIONS
 
-- Session management using express-session
+### with out session store
+
+- NOTE: Client here can be different application from same IP, eg, postman, browser, insomnia
   - Session data is not saved in the cookie itself, just the session ID. Session data is stored server-side
   - Session ID in the cookie get stored on the client side, so every time client makes call to server the cookie gets included
-  - By default session data is stored in memory but it can be stored in persistence database
-  - Persistent session stores can be implemented using redis, dynamoDB, etc.
+  - By default session data is stored in memory but it can be stored in persistence database(i.e. session store)
+  - Persistent session stores can be implemented using mongodb, redis, dynamoDB, etc.
   - At given point in time there might be many client sessions and server maps each session to differnt user
+
+### [with session store](https://www.npmjs.com/package/connect-mongo) and user authentication
+
+- Session with a session store and user authentication maps each session to a specific authenticated user irrespective of the client
 
 ## [PASSPORT](https://github.com/jaredhanson/passport)
 
@@ -81,5 +88,4 @@
 
 NOTE:
 
-- Client can be different application from same IP, eg, postman, browser, insomnia
 - Add `return` statement after error responses, to stop code execution beyond that. If not server throws `Error: Cannot set headers after they are sent to the client`.
