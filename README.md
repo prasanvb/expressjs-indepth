@@ -60,14 +60,24 @@
 
 ## EXAMPLES
 
+- [Cookies and Cookie Parser](src/routes/products.ts)
+- [Express Session](src/routes/session.ts)
+
 - REST API - HTTP methods
 
   - [user singup](src/routes/onboarding.ts)
   - [user authentication](src/routes/authentication.ts)
   - [user actions](src/routes/users.ts)
+  - sample payload
 
-- [Cookies and Cookie Parser](src/routes/products.ts)
-- [Express Session](src/routes/session.ts)
+    ```json
+    {
+      "firstname": "prasan",
+      "lastname": "venkat",
+      "username": "pv",
+      "password": "asd123"
+    }
+    ```
 
 NOTE:
 

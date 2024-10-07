@@ -21,7 +21,7 @@ import prisma from '../prisma/index';
 
 const userRouter = Router();
 
-// API without query paramters
+// API without query parameters
 // GET: "/api/users"
 userRouter.get(
   '/api/users',
@@ -45,9 +45,8 @@ userRouter.get(
   },
 );
 
-// GET: "/api/user/pv"
-// API with route paramters
-// NOTE: Route paramters returned by express is always a string
+// API without route parameters
+// GET: "/api/user/current"
 userRouter.get(
   '/api/user/current',
   reqLoggingMiddleware,
@@ -80,7 +79,7 @@ userRouter.get(
   },
 );
 
-// API with query paramters
+// API with query parameters
 // GET: "/api/users/name?contains=y"
 userRouter.get(
   '/api/users/name',
@@ -148,7 +147,8 @@ userRouter.get(
   },
 );
 
-// PATCH: "/api/user/pv" & payload
+// API without route parameters
+// PATCH: "/api/user/current" & payload
 userRouter.patch(
   '/api/user/current',
   reqLoggingMiddleware,
@@ -197,6 +197,8 @@ userRouter.patch(
   },
 );
 
+// API with route parameters
+// NOTE: Route parameters returned by express is always a string
 // PUT: "/api/user/pv" & payload
 userRouter.put(
   '/api/user/:username',
@@ -257,6 +259,8 @@ userRouter.put(
   },
 );
 
+// API with route parameters
+// NOTE: Route parameters returned by express is always a string
 // DELETE: "/api/user/pv"
 userRouter.delete(
   '/api/user/:username',
