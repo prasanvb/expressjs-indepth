@@ -50,7 +50,7 @@
 - We provide functions to Passport that performs the necessary authentication, serialization and deserialization logic
 - In order for persistent sessions to work, the after successful authentication user must be serialized to the session (i.e. Dynamically manipulates request session object and attaches "user" property), and deserialized when subsequent requests are made (i.e. Verify if the authentication is still valid by checking session object).
 
-## PRISMA
+## [PRISMA](https://www.prisma.io/docs/orm/prisma-client)
 
 - Install Prisma CLI globally (`npm install -g prisma`) to run commands from you CLI or use `npx` to run prisma commands
   - `prisma help`
@@ -60,7 +60,12 @@
 
 ## EXAMPLES
 
-- [REST API - HTTP methods](src/routes/users.ts)
+- REST API - HTTP methods
+
+  - [user singup](src/routes/onboarding.ts)
+  - [user authentication](src/routes/authentication.ts)
+  - [user actions](src/routes/users.ts)
+
 - [Cookies and Cookie Parser](src/routes/products.ts)
 - [Express Session](src/routes/session.ts)
 
