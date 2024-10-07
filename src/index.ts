@@ -4,6 +4,7 @@ import router from './routes/index';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import passport from 'passport';
+import MongoStore from 'connect-mongo';
 
 // Global declarations
 dotenv.config();
@@ -20,18 +21,26 @@ app.use(cookieParser('secret'));
 // TODO: Logging and Tracing
 // TODO: Cors
 // Session management using express-session
-app.use(
-  session({
-    secret: 'sessionSecret',
-    resave: false,
-    saveUninitialized: false,
-    // Set-Cookie attribute HTTP response header is used to send a cookie from the server to the user agent
-    cookie: {
-      maxAge: 1000 * 60, // maxAge: 1 min
-      secure: false, // secure: true requires an https-enabled website
-    },
-  }),
-);
+if (process?.env?.SESSION_SECRET)
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      // Set-Cookie attribute HTTP response header is used to send a cookie from the server to the user agent
+      cookie: {
+        maxAge: 2000 * 60, // maxAge: 2 min
+        secure: false, // secure: true requires an https-enabled website
+      },
+      store: MongoStore.create({
+        mongoUrl: process.env.DATABASE_URL,
+        ttl: 2 * 60, // time period in seconds. Default 14 days
+        autoRemove: 'interval',
+        autoRemoveInterval: 2, // time period in minutes. Default 10 mins
+        touchAfter: 120, // time period in seconds
+      }),
+    }),
+  );
 // Authentication using passport
 app.use(passport.initialize());
 // Dynamically manipulates request session object and attaches user prop
