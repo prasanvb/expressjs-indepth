@@ -14,6 +14,7 @@ import {
 import {
   RequestWithMiddleware,
   SessionWithPassportType,
+  PrismaErrorType,
 } from '../types/interface';
 import { checkIfSessionIsActive } from '../utils/helpers';
 import prisma from '../prisma/index';
@@ -36,10 +37,9 @@ userRouter.get(
         res.status(201).send(allUsers);
       } catch (error) {
         console.error({ error });
-        res.status(400).json({
-          message: 'Unable to fetch all users',
-          error,
-        });
+        res
+          .status(400)
+          .json({ message: (error as PrismaErrorType).meta.cause });
       }
     }
   },
@@ -74,25 +74,24 @@ userRouter.get(
         return;
       }
     } catch (error) {
-      res
-        .status(400)
-        .json({ message: 'Error, unable to query user collection', error });
+      console.error({ error });
+      res.status(400).json({ message: (error as PrismaErrorType).meta.cause });
     }
   },
 );
 
 // API with query paramters
-// GET: "/api/users/filter?name=y"
+// GET: "/api/users/name?contains=y"
 userRouter.get(
-  '/api/users/filter',
+  '/api/users/name',
   reqLoggingMiddleware,
   checkIfSessionValid,
-  query('name')
+  query('contains')
     .isString()
     .notEmpty()
-    .withMessage('Name must not be empty')
+    .withMessage('Query string must not be empty')
     .isLength({ min: 1, max: 10 })
-    .withMessage('Name length requirements not met'),
+    .withMessage('Query string length requirements not met'),
   async (req: Request, res: Response) => {
     const queryValidationResult = validationResult(req);
 
@@ -108,8 +107,9 @@ userRouter.get(
       return;
     }
 
+    // obtaining query params from req
     const data = matchedData(req);
-    const { name } = data;
+    const { contains } = data;
 
     if (checkIfSessionIsActive(req, res)) {
       try {
@@ -118,12 +118,12 @@ userRouter.get(
             OR: [
               {
                 firstname: {
-                  contains: name,
+                  contains,
                 },
               },
               {
                 lastname: {
-                  contains: name,
+                  contains,
                 },
               },
             ],
@@ -139,10 +139,60 @@ userRouter.get(
           return;
         }
       } catch (error) {
+        console.error({ error });
         res
           .status(400)
-          .json({ message: 'Error, unable to query user collection', error });
+          .json({ message: (error as PrismaErrorType).meta.cause });
       }
+    }
+  },
+);
+
+// PATCH: "/api/user/pv" & payload
+userRouter.patch(
+  '/api/user/current',
+  reqLoggingMiddleware,
+  checkIfSessionValid,
+  checkSchema(patchValidationSchema),
+  async (req: RequestWithMiddleware, res: Response) => {
+    const queryValidationResult = validationResult(req);
+
+    if (!queryValidationResult.isEmpty()) {
+      res.status(400).json({
+        message: 'Invalid body.',
+        queryValidationResult,
+      });
+      return;
+    }
+
+    const username = (req.session as SessionWithPassportType)?.passport?.user
+      ?.username;
+
+    const { body } = req;
+    try {
+      const updatedUser = await prisma.user.update({
+        where: {
+          username,
+        },
+        data: {
+          ...body,
+        },
+        select: {
+          username: true,
+          firstname: true,
+          lastname: true,
+        },
+      });
+
+      if (updatedUser) {
+        res.status(200).send(updatedUser);
+      } else {
+        res.status(400).json({ message: 'No matching username found' });
+        return;
+      }
+    } catch (error) {
+      console.error({ error });
+      res.status(400).json({ message: (error as PrismaErrorType).meta.cause });
     }
   },
 );
@@ -173,64 +223,19 @@ userRouter.put(
     } = req;
 
     try {
-      const updatedUser = await prisma.user.update({
+      const updatedUser = await prisma.user.upsert({
         where: {
           username,
         },
-        data: {
+        update: {
           firstname,
           lastname,
         },
-        select: {
-          username: true,
-          firstname: true,
-          lastname: true,
-        },
-      });
-
-      if (updatedUser) {
-        res.status(200).send(updatedUser);
-      } else {
-        res.status(400).json({ message: 'No matching username found' });
-        return;
-      }
-    } catch (error) {
-      res
-        .status(400)
-        .json({ message: 'Error, unable to overwrite user collection', error });
-    }
-  },
-);
-
-// PATCH: "/api/user/pv" & payload
-userRouter.patch(
-  '/api/user/:username',
-  reqLoggingMiddleware,
-  checkIfSessionValid,
-  checkSchema(patchValidationSchema),
-  async (req: RequestWithMiddleware, res: Response) => {
-    const queryValidationResult = validationResult(req);
-
-    if (!queryValidationResult.isEmpty()) {
-      res.status(400).json({
-        message: 'Invalid body.',
-        queryValidationResult,
-      });
-      return;
-    }
-
-    const {
-      params: { username },
-      body,
-    } = req;
-
-    try {
-      const updatedUser = await prisma.user.update({
-        where: {
+        create: {
           username,
-        },
-        data: {
-          ...body,
+          firstname,
+          lastname,
+          password: 'asd123',
         },
         select: {
           username: true,
@@ -246,9 +251,8 @@ userRouter.patch(
         return;
       }
     } catch (error) {
-      res
-        .status(400)
-        .json({ message: 'Error, unable to overwrite user collection', error });
+      console.error({ error });
+      res.status(400).json({ message: (error as PrismaErrorType).meta.cause });
     }
   },
 );
@@ -262,6 +266,16 @@ userRouter.delete(
     const {
       params: { username },
     } = req;
+
+    const sessionusername = (req.session as SessionWithPassportType)?.passport
+      ?.user?.username;
+
+    if (username === sessionusername) {
+      res.status(400).json({
+        message: 'You cannot delete yourself, try deleting other users',
+      });
+      return;
+    }
 
     try {
       const deleteUser = await prisma.user.delete({
@@ -283,10 +297,8 @@ userRouter.delete(
         });
       }
     } catch (error) {
-      res.status(400).json({
-        message: 'Error, unable to delete user from collection',
-        error,
-      });
+      console.error({ error });
+      res.status(400).json({ message: (error as PrismaErrorType).meta.cause });
     }
   },
 );

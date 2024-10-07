@@ -21,3 +21,13 @@ export interface SessionWithPassportType extends Session {
     };
   };
 }
+
+export interface PrismaErrorType {
+  name: string;
+  code: string;
+  clientVersion: string;
+  meta: {
+    modelName: string;
+    cause: string;
+  };
+}
