@@ -39,7 +39,7 @@ if (process?.env?.SESSION_SECRET)
       }),
       // Session store: After authentication and user request session dynamical modification if the session is still valid
       // then for every new API request session, the TTL and cookie time extend
-      resave: true,
+      resave: false,
       // Session store: Session is created for every request even if session object is dynamically unmodified
       // (i.e. user not authenticated and user data not added to request session)
       saveUninitialized: false,

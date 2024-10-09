@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { validationResult, checkSchema, matchedData } from 'express-validator';
 import { onboadringValidationSchema } from '../utils/validationSchema';
 import prisma from '../prisma/index';
+import { hash } from '../utils/crypto';
 
 const onboardingRouter = Router();
 
@@ -22,6 +23,7 @@ onboardingRouter.post(
     // After validation, extracts request body and builds an object with them.
     const data = matchedData(req);
     const { firstname, lastname, username, password } = data;
+    const hashedPassword = await hash(password);
 
     try {
       const newUser = await prisma.user.create({
@@ -29,7 +31,7 @@ onboardingRouter.post(
           firstname,
           lastname,
           username,
-          password,
+          password: hashedPassword,
         },
       });
 

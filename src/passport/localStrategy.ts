@@ -3,6 +3,7 @@ import { UserType } from '../types/interface';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import prisma from '../prisma/index';
+import bcrypt from 'bcrypt';
 
 // NOTE: Input authentication values are different then StrategyOptions should be updated
 // example: { usernameField: 'email', passwordField: 'passcode' },
@@ -11,6 +12,7 @@ export default passport.use(
     { usernameField: 'username', passwordField: 'password' },
     async (username, password, done) => {
       console.log('Inside LocalStrategy', { username, password });
+
       try {
         const user = await prisma.user.findUnique({
           where: {
@@ -18,15 +20,20 @@ export default passport.use(
           },
         });
 
-        if (!user) throw error('User not found');
-        if (user.password !== password)
-          throw error('Invalid passpword credentials');
+        if (!user) throw error('Username not found');
 
-        done(null, user);
+        bcrypt.compare(password, user.password, (err, result) => {
+          console.log({ err, result });
+          if (result) {
+            done(null, user);
+          } else {
+            done('password does not match', false);
+          }
+        });
       } catch (error) {
         console.error({ error });
 
-        done(error, false);
+        done('Username not found', false);
       }
     },
   ),
