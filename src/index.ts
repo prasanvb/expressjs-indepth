@@ -12,6 +12,7 @@ const app = express();
 const port = process.env.PORT;
 
 // Global middlewares
+// express.json is built-in middleware function that parses incoming request bodies containing JSON payloads and makes the parsed data available under req.body.
 app.use(express.json());
 /*
   NOTE: Below secret in cookieParser is directly used for creating signed cookies 
