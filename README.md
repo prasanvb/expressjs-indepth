@@ -10,7 +10,7 @@
 
 - Middleware should be always place before all routes
 - We can have multiple middle but the order of calling matters
-- We cannot pass data from one middleware to other middleware
+- We can pass data from one middleware function to the next in Express.js using the res.locals object or the req object itself 
 - We can dynamically attach properties to request object
 - `next()` called inside to move from middleware to the next
 
